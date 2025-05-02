@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 //AYUDA: unique.Id no sirve de nada porque el network te lo da hecho, lo primero que seria es eliminar el botom de host que solo da amarguras, crear nodo servidor, y que todo los clienetes se conecten
 // luego puedes poner el boton de host otra vez y ya funcionaria bien, ghestionar conexiones y reconexiones sin cerrar servidor, 
@@ -16,15 +17,24 @@ public class PlayerController : MonoBehaviour
     public string uniqueID; // Añadir una propiedad para el identificador único
 
     [Header("Movement Settings")]
+    Vector2 _input;                         //cuando digas que va para delante va para delante sin tener que cambiar el codigo, x rotacion y translacion
     public float moveSpeed = 5f;           // Velocidad de movimiento
+    public float _rotSpeed = 270f;           //velocidad rot
     public float zombieSpeedModifier = 0.8f; // Modificador de velocidad para zombies
     public Animator animator;              // Referencia al Animator
     public Transform cameraTransform;      // Referencia a la cámara
 
+    Transform _playerTransform;             //para sacar el transform del player
+
     private float horizontalInput;         // Entrada horizontal (A/D o flechas)
     private float verticalInput;           // Entrada vertical (W/S o flechas)
 
-    void Start()
+    private void Awake()
+    {
+        _playerTransform = transform;       //para acceder al transform del gameobject facilmente, nos devuleve la transformada del objeto
+    }
+
+   /* void Start()
     {
         // Buscar el objeto "CanvasPlayer" en la escena
         GameObject canvas = GameObject.Find("CanvasPlayer");
@@ -47,22 +57,30 @@ public class PlayerController : MonoBehaviour
         }
 
         UpdateCoinUI();
-    }
+    }*/
 
-    void Update()
+    void FixedUpdate()  //cuando utilizamos fisicas, fixed update pq quiere que las interpolaciones se hagan en tiempos constantes y da menos errores
     {
+        _playerTransform.Translate(Vector3.forward * (_input.y * moveSpeed * Time.fixedDeltaTime));     //movernos hacia adelante //ESTA ABAJO MODIFICAR
+        _playerTransform.Rotate(Vector3.up * (_input.x * _rotSpeed * Time.fixedDeltaTime));             //rotamos sobre y
+
         // Leer entrada del teclado
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
 
         // Mover el jugador
-        MovePlayer();
+        //MovePlayer();
 
         // Manejar las animaciones del jugador
         HandleAnimations();
     }
 
-    void MovePlayer()
+    public void OnMove(InputAction.CallbackContext contex)
+    {
+        _input = contex.ReadValue<Vector2>();       //cuando input se ejecute fixed update esta esperando un imput para moverse
+    }
+
+    /*void MovePlayer()
     {
         if (cameraTransform == null) { return; }
 
@@ -83,7 +101,7 @@ public class PlayerController : MonoBehaviour
             // Mover al jugador en la dirección deseada
             transform.Translate(moveDirection * adjustedSpeed * Time.deltaTime, Space.World);
         }
-    }
+    }*/
 
     void HandleAnimations()
     {
