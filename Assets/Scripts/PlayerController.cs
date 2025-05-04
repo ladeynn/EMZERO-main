@@ -18,8 +18,10 @@ public class PlayerController : MonoBehaviour
 
     [Header("Movement Settings")]
     Vector2 _input;                         //cuando digas que va para delante va para delante sin tener que cambiar el codigo, x rotacion y translacion
-    public float moveSpeed = 5f;           // Velocidad de movimiento
-    public float _rotSpeed = 270f;           //velocidad rot
+    
+    //el serializefield es para que se mantenga privado pero se oueda modificar desde el inspector, pero no se puede acceder desde otros scripts
+    [SerializeField] float moveSpeed = 1f;           // Velocidad de movimiento
+    [SerializeField] float _rotSpeed = 270f;           //velocidad rot
     public float zombieSpeedModifier = 0.8f; // Modificador de velocidad para zombies
     public Animator animator;              // Referencia al Animator
     public Transform cameraTransform;      // Referencia a la cámara
@@ -34,7 +36,7 @@ public class PlayerController : MonoBehaviour
         _playerTransform = transform;       //para acceder al transform del gameobject facilmente, nos devuleve la transformada del objeto
     }
 
-   /* void Start()
+    void Start()
     {
         // Buscar el objeto "CanvasPlayer" en la escena
         GameObject canvas = GameObject.Find("CanvasPlayer");
@@ -57,7 +59,7 @@ public class PlayerController : MonoBehaviour
         }
 
         UpdateCoinUI();
-    }*/
+    }
 
     void FixedUpdate()  //cuando utilizamos fisicas, fixed update pq quiere que las interpolaciones se hagan en tiempos constantes y da menos errores
     {
@@ -65,11 +67,12 @@ public class PlayerController : MonoBehaviour
         _playerTransform.Rotate(Vector3.up * (_input.x * _rotSpeed * Time.fixedDeltaTime));             //rotamos sobre y
 
         // Leer entrada del teclado
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxis("Vertical");
+        //horizontalInput = Input.GetAxis("Horizontal");
+        //verticalInput = Input.GetAxis("Vertical");
 
         // Mover el jugador
         //MovePlayer();
+        //PlayerMove();
 
         // Manejar las animaciones del jugador
         HandleAnimations();
@@ -80,6 +83,22 @@ public class PlayerController : MonoBehaviour
         _input = contex.ReadValue<Vector2>();       //cuando input se ejecute fixed update esta esperando un imput para moverse
     }
 
+    /*void PlayerMove()
+    {
+        if (cameraTransform == null) { return; }
+
+        // Calcular la dirección de movimiento en relación a la cámara
+        Vector3 moveDirection = (cameraTransform.forward * verticalInput + cameraTransform.right * horizontalInput).normalized;
+        moveDirection.y = 0f; // Asegurarnos de que el movimiento es horizontal (sin componente Y)
+
+        _playerTransform.Translate(Vector3.forward * (_input.y * moveSpeed * Time.fixedDeltaTime));     //movernos hacia adelante //ESTA ABAJO MODIFICAR
+        _playerTransform.Translate(Vector3.left * (_input.y * moveSpeed * Time.fixedDeltaTime));
+
+
+        //_playerTransform.Rotate(Vector3.up * (_input.x * _rotSpeed * Time.fixedDeltaTime));             //rotamos sobre y
+
+
+    }*/
     /*void MovePlayer()
     {
         if (cameraTransform == null) { return; }
