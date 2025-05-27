@@ -42,6 +42,8 @@ public class GameManager : NetworkBehaviour
     public string PlayerPrefabName => playerPrefab.name;
     public string ZombiePrefabName => zombiePrefab.name;
 
+    int serverPlayerCount;
+
 
     void OnGUI()
     {
@@ -96,6 +98,7 @@ public class GameManager : NetworkBehaviour
             // Después de que el servidor genera el nivel, informa a los clientes
             Debug.Log("[LevelManager] Llamando a InformClientsToBuildLevelClientRpc().");
             InformClientsToBuildLevelClientRpc();
+            PrintClientCountClientRpc(NetworkManager.Singleton.LocalClientId, NetworkManager.Singleton.ConnectedClients.Count);
         }
         else
         {
@@ -110,6 +113,7 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("el server ha recibido el mensaje");
         InformClientsToBuildLevelClientRpc();
+        PrintClientCountClientRpc(NetworkManager.Singleton.LocalClientId, NetworkManager.Singleton.ConnectedClients.Count);
     }
     [ClientRpc]
     private void InformClientsToBuildLevelClientRpc()
@@ -131,26 +135,65 @@ public class GameManager : NetworkBehaviour
         if (IsServer)
         {
             Debug.Log("[LevelManager] Start() ejecutado en el server.");
-            NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
+            //NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
         }
 
         if (IsClient)
         {
-            NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
+            //NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
         }
 
         remainingSeconds = minutes * 60;
     }
-
-    [ClientRpc]
-    public void PrintClientCountClientRpc()
+    [ServerRpc(RequireOwnership = false)]
+    public void getConectedPlayersServerRpc()
     {
-        int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
-        Debug.Log($"player cout: uwu");
+        updatePlayerCountClientRpc(NetworkManager.Singleton.ConnectedClients.Count);
+    }
+    [ClientRpc]
+    void updatePlayerCountClientRpc(int players)
+    {
+        Debug.Log($"player cout: {players}");
+        serverPlayerCount = players;
+    }
+    [ClientRpc]
+    public void PrintClientCountClientRpc(ulong clientId, int playerCount)
+    {
+        Debug.Log($"player cout: {playerCount}");
+        GameObject playerInstance;
+        Vector3 spawnPosition;
+
+        // Asignar aleatoriamente a los jugadores como humano o zombi
+        bool isHuman = (playerCount % 2 == 0); // Alternar entre humano y zombi
+
+        Debug.Log($"isHuman: {isHuman}");
+        if (isHuman)
+        {
+            spawnPosition = humanSpawnPoints[playerCount % humanSpawnPoints.Count];
+            Debug.Log($"[LevelManager] Spawning humano en: {spawnPosition}");
+            playerInstance = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
+        }
+        else
+        {
+            spawnPosition = zombieSpawnPoints[playerCount % zombieSpawnPoints.Count];
+            Debug.Log($"[LevelManager] Spawning zombie en: {spawnPosition}");
+            playerInstance = Instantiate(zombiePrefab, spawnPosition, Quaternion.identity);
+        }
+
+        // Asociar el player con el NetworkObject para que sea gestionado por el servidor
+        var netObj = playerInstance.GetComponent<NetworkObject>();
+        netObj.SpawnAsPlayerObject(clientId);
+
+        // Asignar el rol correspondiente (Humano o Zombi)
+        playerController = playerInstance.GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.isZombie = !isHuman; // Si es humano, el rol será false (no zombi), si es zombi será true
+        }
     }
     private void HandleClientConnected(ulong clientId)
     {
-        PrintClientCountClientRpc();
+        PrintClientCountClientRpc(clientId, NetworkManager.Singleton.ConnectedClients.Count);
         int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
         Debug.Log($"player cout: {playerCount}");
         GameObject playerInstance;
