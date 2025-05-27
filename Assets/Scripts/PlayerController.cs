@@ -66,6 +66,8 @@ public class PlayerController : MonoBehaviour
         _playerTransform.Translate(Vector3.forward * (_input.y * moveSpeed * Time.fixedDeltaTime));     //movernos hacia adelante //ESTA ABAJO MODIFICAR
         _playerTransform.Rotate(Vector3.up * (_input.x * _rotSpeed * Time.fixedDeltaTime));             //rotamos sobre y
 
+ 
+
         // Leer entrada del teclado
         //horizontalInput = Input.GetAxis("Horizontal");
         //verticalInput = Input.GetAxis("Vertical");

@@ -93,8 +93,9 @@ public class LevelBuilder : MonoBehaviour
 
                 CreateRoom(roomWidth, roomLength, x, z);
 
-                // Calcular spawn points
                 Vector3 spawnPoint = new Vector3(x + roomWidth / 2, 2, z + roomLength / 2);
+
+                Debug.Log($"[LevelBuilder] Spawn point calculado: {spawnPoint}");
                 if (i % 2 == 0 && j % 2 == 0)
                 {
                     humanSpawnPoints.Add(spawnPoint);

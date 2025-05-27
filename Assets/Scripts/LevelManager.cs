@@ -37,7 +37,7 @@ public class LevelManager : NetworkBehaviour
     private bool isGameOver = false;
     private float remainingSeconds;
 
-    private LevelBuilder levelBuilder; // Declarar la variable levelBuilder
+    public LevelBuilder levelBuilder; // Declarar la variable levelBuilder
     private PlayerController playerController;
     public string PlayerPrefabName => playerPrefab.name;
     public string ZombiePrefabName => zombiePrefab.name;
@@ -47,18 +47,33 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] NetworkManager _NetworkManager;
     #endregion
 
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            Debug.Log("[LevelManager] OnNetworkSpawn() ejecutado en el servidor.");
+            levelBuilder.Build();
+            humanSpawnPoints = levelBuilder.GetHumanSpawnPoints();
+            zombieSpawnPoints = levelBuilder.GetZombieSpawnPoints();
+            coinsGenerated = levelBuilder.GetCoinsGenerated();
+        }
+        else
+        {
+            Debug.Log("[LevelManager] OnNetworkSpawn() ejecutado en el cliente.");
+        }
+    }
+
     private void Start()
     {
+        if (!IsServer)
+        {
+            Debug.Log("[LevelManager] Start() ejecutado en el cliente (solo cliente).");
+        }
+
         if (IsServer)
         {
             NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
         }
-
-        // Buscar puntos de spawn y generar monedas
-        levelBuilder.Build();
-        humanSpawnPoints = levelBuilder.GetHumanSpawnPoints();
-        zombieSpawnPoints = levelBuilder.GetZombieSpawnPoints();
-        coinsGenerated = levelBuilder.GetCoinsGenerated();
 
         remainingSeconds = minutes * 60;
     }
@@ -74,14 +89,14 @@ public class LevelManager : NetworkBehaviour
 
         if (isHuman)
         {
-            // Spawn humano
             spawnPosition = humanSpawnPoints[playerCount % humanSpawnPoints.Count];
+            Debug.Log($"[LevelManager] Spawning humano en: {spawnPosition}");
             playerInstance = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
         }
         else
         {
-            // Spawn zombi
             spawnPosition = zombieSpawnPoints[playerCount % zombieSpawnPoints.Count];
+            Debug.Log($"[LevelManager] Spawning zombie en: {spawnPosition}");
             playerInstance = Instantiate(zombiePrefab, spawnPosition, Quaternion.identity);
         }
 

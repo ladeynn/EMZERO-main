@@ -27,7 +27,15 @@ public class UIManager : MonoBehaviour
 
     void StartButtons()
     {
-        if (GUILayout.Button("Host")) _NetworkManager.StartHost();
+        if (GUILayout.Button("Host"))
+        {
+            _NetworkManager.StartHost();
+
+            //bloquea el cursor en el centro de la pantalla
+            Cursor.lockState = CursorLockMode.Locked;
+            //hsce el cursor invisible
+            Cursor.visible = false;
+        }
         if (GUILayout.Button("Client")) _NetworkManager.StartClient();
         if (GUILayout.Button("Server")) _NetworkManager.StartServer();
     }

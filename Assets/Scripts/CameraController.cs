@@ -19,6 +19,7 @@ public class CameraController : MonoBehaviour
             Debug.LogWarning("Player reference is missing.");
             return;
         }
+        
 
         HandleCameraRotation();
         UpdateCameraPosition();

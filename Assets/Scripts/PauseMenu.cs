@@ -14,6 +14,7 @@ public class PauseMenu : MonoBehaviour
         {
             if (isPaused)
             {
+
                 ResumeGame();
             }
             else
@@ -50,5 +51,8 @@ public class PauseMenu : MonoBehaviour
         // Opcional: Asegúrate de que el tiempo está restaurado antes de salir
         Time.timeScale = 1f;
         SceneManager.LoadScene("MenuScene"); // Cambia "MainMenu" por el nombre de tu escena principal
+        // Gestión del cursor
+        Cursor.lockState = CursorLockMode.None; // Desbloquea el cursor
+        Cursor.visible = true; // Hace visible el cursor
     }
 }
