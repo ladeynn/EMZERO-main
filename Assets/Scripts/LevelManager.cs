@@ -2,12 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 using TMPro;
-
-public enum GameMode
-{
-    Tiempo,
-    Monedas
-}
 public class LevelManager : NetworkBehaviour
 {
     #region Properties
@@ -25,9 +19,6 @@ public class LevelManager : NetworkBehaviour
     [Header("Game Mode Settings")]
     [SerializeField] private GameMode gameMode;
     [SerializeField] private int minutes = 5;
-
-    private List<Vector3> humanSpawnPoints = new List<Vector3>();
-    private List<Vector3> zombieSpawnPoints = new List<Vector3>();
 
     private TextMeshProUGUI humansText;
     private TextMeshProUGUI zombiesText;
@@ -47,73 +38,11 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] NetworkManager _NetworkManager;
     #endregion
 
-    public override void OnNetworkSpawn()
-    {
-        if (IsServer)
-        {
-            Debug.Log("[LevelManager] OnNetworkSpawn() ejecutado en el servidor.");
-            levelBuilder.Build();
-            humanSpawnPoints = levelBuilder.GetHumanSpawnPoints();
-            zombieSpawnPoints = levelBuilder.GetZombieSpawnPoints();
-            coinsGenerated = levelBuilder.GetCoinsGenerated();
-        }
-        else
-        {
-            Debug.Log("[LevelManager] OnNetworkSpawn() ejecutado en el cliente.");
-        }
-    }
-
-    private void Start()
-    {
-        if (!IsServer)
-        {
-            Debug.Log("[LevelManager] Start() ejecutado en el cliente (solo cliente).");
-        }
-
-        if (IsServer)
-        {
-            NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
-        }
-
-        remainingSeconds = minutes * 60;
-    }
-
-    private void HandleClientConnected(ulong clientId)
-    {
-        int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
-        GameObject playerInstance;
-        Vector3 spawnPosition;
-
-        // Asignar aleatoriamente a los jugadores como humano o zombi
-        bool isHuman = (playerCount % 2 == 0); // Alternar entre humano y zombi
-
-        if (isHuman)
-        {
-            spawnPosition = humanSpawnPoints[playerCount % humanSpawnPoints.Count];
-            Debug.Log($"[LevelManager] Spawning humano en: {spawnPosition}");
-            playerInstance = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
-        }
-        else
-        {
-            spawnPosition = zombieSpawnPoints[playerCount % zombieSpawnPoints.Count];
-            Debug.Log($"[LevelManager] Spawning zombie en: {spawnPosition}");
-            playerInstance = Instantiate(zombiePrefab, spawnPosition, Quaternion.identity);
-        }
-
-        // Asociar el player con el NetworkObject para que sea gestionado por el servidor
-        var netObj = playerInstance.GetComponent<NetworkObject>();
-        netObj.SpawnAsPlayerObject(clientId);
-
-        // Asignar el rol correspondiente (Humano o Zombi)
-        playerController = playerInstance.GetComponent<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.isZombie = !isHuman; // Si es humano, el rol será false (no zombi), si es zombi será true
-        }
-    }
+    
 
     private void Update()
     {
+
         if (gameMode == GameMode.Tiempo)
         {
             HandleTimeLimitedGameMode();
