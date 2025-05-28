@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -12,8 +10,6 @@ public enum GameMode
 
 public class GameManager : NetworkBehaviour
 {
-    //private NetworkManager _NetworkManager;
-
     [SerializeField] NetworkManager _NetworkManager;
 
     [Header("Prefabs")]
@@ -21,9 +17,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] GameObject zombiePrefab;
 
     [Header("Team Settings")]
-    [Tooltip("Número máximo de jugadores humanos")]
     [SerializeField] private int maxHumans = 2;
-    [Tooltip("Número máximo de zombis")]
     [SerializeField] private int maxZombies = 2;
 
     [Header("Game Mode Settings")]
@@ -32,18 +26,13 @@ public class GameManager : NetworkBehaviour
 
     private List<Vector3> humanSpawnPoints = new List<Vector3>();
     private List<Vector3> zombieSpawnPoints = new List<Vector3>();
-
-    private int coinsGenerated = 0;
-    private bool isGameOver = false;
     private float remainingSeconds;
 
-    public LevelBuilder levelBuilder; // Declarar la variable levelBuilder
-    private PlayerController playerController;
+    public LevelBuilder levelBuilder;
     public string PlayerPrefabName => playerPrefab.name;
     public string ZombiePrefabName => zombiePrefab.name;
 
-    int serverPlayerCount;
-
+    private Dictionary<ulong, bool> playerRoles = new Dictionary<ulong, bool>(); // true = zombie, false = humano
 
     void OnGUI()
     {
@@ -56,7 +45,6 @@ public class GameManager : NetworkBehaviour
         {
             StatusLabels();
         }
-
         GUILayout.EndArea();
     }
 
@@ -64,168 +52,176 @@ public class GameManager : NetworkBehaviour
     {
         if (GUILayout.Button("Host"))
         {
+            NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
+
             _NetworkManager.StartHost();
-
-            //bloquea el cursor en el centro de la pantalla
             Cursor.lockState = CursorLockMode.Locked;
-            //hsce el cursor invisible
             Cursor.visible = false;
-
         }
         if (GUILayout.Button("Client")) _NetworkManager.StartClient();
-        if (GUILayout.Button("Server")) _NetworkManager.StartServer();
+        if (GUILayout.Button("Server"))
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
+
+            _NetworkManager.StartServer();
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     void StatusLabels()
     {
-        var mode = _NetworkManager.IsHost ?
-            "Host" : _NetworkManager.IsServer ? "Server" : "Client";
-
-        GUILayout.Label("Transport: " +
-            _NetworkManager.NetworkConfig.NetworkTransport.GetType().Name);
-        GUILayout.Label("Mode: " + mode);
+        var mode = _NetworkManager.IsHost ? "Host" : _NetworkManager.IsServer ? "Servidor" : "Cliente";
+        GUILayout.Label("Transport: " + _NetworkManager.NetworkConfig.NetworkTransport.GetType().Name);
+        GUILayout.Label("Modo: " + mode);
     }
+
+    private void Start()
+    {
+        if (IsClient && !IsServer)
+        {
+            Debug.Log("[GameManager] Cliente (no host), solicitando construir el nivel.");
+            RequestBuildLevelServerRpc();
+        }
+
+        if (IsServer)
+        {
+            Debug.Log("[GameManager] Start() en servidor.");
+        }
+
+        remainingSeconds = minutes * 60;
+    }
+
 
     public override void OnNetworkSpawn()
     {
         if (IsServer)
         {
-            Debug.Log("[LevelManager] OnNetworkSpawn() ejecutado en el servidor.");
+            Debug.Log("[GameManager] OnNetworkSpawn() en servidor.");
+            if (levelBuilder == null)
+            {
+                Debug.LogError("LevelBuilder no está asignado.");
+                return;
+            }
+
             levelBuilder.Build();
             humanSpawnPoints = levelBuilder.GetHumanSpawnPoints();
             zombieSpawnPoints = levelBuilder.GetZombieSpawnPoints();
-            coinsGenerated = levelBuilder.GetCoinsGenerated();
-            // Después de que el servidor genera el nivel, informa a los clientes
-            Debug.Log("[LevelManager] Llamando a InformClientsToBuildLevelClientRpc().");
+
             InformClientsToBuildLevelClientRpc();
-            PrintClientCountClientRpc(NetworkManager.Singleton.LocalClientId, NetworkManager.Singleton.ConnectedClients.Count);
         }
         else
         {
-            Debug.Log("[LevelManager] OnNetworkSpawn() ejecutado en el cliente.");
-            OnServerRpc();
-
+            Debug.Log("[GameManager] OnNetworkSpawn() en cliente.");
+            RequestBuildLevelServerRpc();
         }
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void OnServerRpc()
+    public void RequestBuildLevelServerRpc()
     {
-        Debug.Log("el server ha recibido el mensaje");
+        Debug.Log("Cliente ha solicitado construir el nivel.");
         InformClientsToBuildLevelClientRpc();
-        PrintClientCountClientRpc(NetworkManager.Singleton.LocalClientId, NetworkManager.Singleton.ConnectedClients.Count);
     }
+
     [ClientRpc]
     private void InformClientsToBuildLevelClientRpc()
     {
-        if (!IsServer) // Los clientes (no el servidor que ya lo hizo) construyen el nivel
+        if (!IsServer && levelBuilder != null)
         {
-            Debug.Log("[LevelManager] ClientRpc recibido. Construyendo nivel.");
+            Debug.Log("[GameManager] Cliente construyendo nivel.");
             levelBuilder.Build();
         }
     }
 
-    private void Start()
-    {
-        if (!IsServer)
-        {
-            Debug.Log("[LevelManager] Start() ejecutado en el cliente (solo cliente).");
-        }
-
-        if (IsServer)
-        {
-            Debug.Log("[LevelManager] Start() ejecutado en el server.");
-            //NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
-        }
-
-        if (IsClient)
-        {
-            //NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnected;
-        }
-
-        remainingSeconds = minutes * 60;
-    }
-    [ServerRpc(RequireOwnership = false)]
-    public void getConectedPlayersServerRpc()
-    {
-        updatePlayerCountClientRpc(NetworkManager.Singleton.ConnectedClients.Count);
-    }
-    [ClientRpc]
-    void updatePlayerCountClientRpc(int players)
-    {
-        Debug.Log($"player cout: {players}");
-        serverPlayerCount = players;
-    }
-    [ClientRpc]
-    public void PrintClientCountClientRpc(ulong clientId, int playerCount)
-    {
-        Debug.Log($"player cout: {playerCount}");
-        GameObject playerInstance;
-        Vector3 spawnPosition;
-
-        // Asignar aleatoriamente a los jugadores como humano o zombi
-        bool isHuman = (playerCount % 2 == 0); // Alternar entre humano y zombi
-
-        Debug.Log($"isHuman: {isHuman}");
-        if (isHuman)
-        {
-            spawnPosition = humanSpawnPoints[playerCount % humanSpawnPoints.Count];
-            Debug.Log($"[LevelManager] Spawning humano en: {spawnPosition}");
-            playerInstance = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
-        }
-        else
-        {
-            spawnPosition = zombieSpawnPoints[playerCount % zombieSpawnPoints.Count];
-            Debug.Log($"[LevelManager] Spawning zombie en: {spawnPosition}");
-            playerInstance = Instantiate(zombiePrefab, spawnPosition, Quaternion.identity);
-        }
-
-        // Asociar el player con el NetworkObject para que sea gestionado por el servidor
-        var netObj = playerInstance.GetComponent<NetworkObject>();
-        netObj.SpawnAsPlayerObject(clientId);
-
-        // Asignar el rol correspondiente (Humano o Zombi)
-        playerController = playerInstance.GetComponent<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.isZombie = !isHuman; // Si es humano, el rol será false (no zombi), si es zombi será true
-        }
-    }
     private void HandleClientConnected(ulong clientId)
     {
-        PrintClientCountClientRpc(clientId, NetworkManager.Singleton.ConnectedClients.Count);
-        int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
-        Debug.Log($"player cout: {playerCount}");
-        GameObject playerInstance;
-        Vector3 spawnPosition;
+        Debug.Log($"[GameManager] Cliente conectado: {clientId}");
 
-        // Asignar aleatoriamente a los jugadores como humano o zombi
-        bool isHuman = (playerCount % 2 == 0); // Alternar entre humano y zombi
+        bool isHuman = AsignarRol(clientId);
+        Vector3 spawnPosition = ObtenerPuntoDeSpawn(isHuman);
 
-        if (isHuman)
-        {
-            spawnPosition = humanSpawnPoints[playerCount % humanSpawnPoints.Count];
-            Debug.Log($"[LevelManager] Spawning humano en: {spawnPosition}");
-            playerInstance = Instantiate(playerPrefab, spawnPosition, Quaternion.identity);
-        }
-        else
-        {
-            spawnPosition = zombieSpawnPoints[playerCount % zombieSpawnPoints.Count];
-            Debug.Log($"[LevelManager] Spawning zombie en: {spawnPosition}");
-            playerInstance = Instantiate(zombiePrefab, spawnPosition, Quaternion.identity);
-        }
+        GameObject prefab = isHuman ? playerPrefab : zombiePrefab;
+        GameObject instancia = Instantiate(prefab, spawnPosition, Quaternion.identity);
 
-        // Asociar el player con el NetworkObject para que sea gestionado por el servidor
-        var netObj = playerInstance.GetComponent<NetworkObject>();
-        netObj.SpawnAsPlayerObject(clientId);
+        NetworkObject netObj = instancia.GetComponent<NetworkObject>();
+        netObj.Spawn(); // Spawn manual SIN usar SpawnAsPlayerObject
+        netObj.ChangeOwnership(clientId); // Le damos ownership al jugador
 
-        // Asignar el rol correspondiente (Humano o Zombi)
-        playerController = playerInstance.GetComponent<PlayerController>();
-        if (playerController != null)
-        {
-            playerController.isZombie = !isHuman; // Si es humano, el rol será false (no zombi), si es zombi será true
-        }
+        PlayerController pc = instancia.GetComponent<PlayerController>();
+        if (pc != null) pc.isZombie = !isHuman;
+
+        Debug.Log($"[GameManager] Jugador {clientId} {(isHuman ? "Humano" : "Zombi")} instanciado en {spawnPosition}");
     }
 
 
+    private bool AsignarRol(ulong clientId)
+    {
+        int totalZombies = 0;
+        int totalHumanos = 0;
+
+        foreach (var entry in playerRoles.Values)
+        {
+            if (entry) totalZombies++;
+            else totalHumanos++;
+        }
+
+        //1
+        if (totalZombies == 0 && totalHumanos == 0)
+        {
+            playerRoles[clientId] = true;
+            Debug.Log($"Jugador {clientId} asignado como ZOMBI (primer jugador)");
+            return false; // Retornamos false porque es Zombi (isHuman = false)
+        }
+        //2
+        else if (totalZombies < totalHumanos && totalZombies < maxZombies)
+        {
+            playerRoles[clientId] = true;
+            Debug.Log($"Jugador {clientId} asignado como ZOMBI");
+            return false; // Retornamos false porque es Zombi (isHuman = false)
+        }
+        //3
+        else if (totalZombies > totalHumanos && totalHumanos < maxHumans)
+        {
+            playerRoles[clientId] = false;
+            Debug.Log($"Jugador {clientId} asignado como HUMANO");
+            return true; // Retornamos false porque es Zombi (isHuman = false)
+        }
+        //4
+        else if (totalHumanos == totalZombies && totalZombies < maxZombies)
+        {
+            playerRoles[clientId] = true;
+            Debug.Log($"Jugador {clientId} asignado como ZOMBI");
+            return false; // Retornamos false porque es Zombi (isHuman = false)
+        }
+        //5
+        else if (totalZombies >= maxZombies && totalHumanos >= maxHumans)
+        {
+            Debug.Log($"ERROR: La sala esta llena, intentalo mas tarde :)");
+            //aqui habria que hacer que no se meta, pero de momento vamos a returnear false
+            return false;
+        }
+
+        //aqui habria que hacer que no se meta, pero de momento vamos a returnear false
+        Debug.LogWarning("No se pudo asignar rol. Asignando como HUMANO por defecto.");
+        playerRoles[clientId] = false;
+        return true;
+    }
+
+    private Vector3 ObtenerPuntoDeSpawn(bool isHuman)
+    {
+        if (isHuman && humanSpawnPoints.Count > 0)
+        {
+            return humanSpawnPoints[Random.Range(0, humanSpawnPoints.Count)];
+        }
+        else if (!isHuman && zombieSpawnPoints.Count > 0)
+        {
+            return zombieSpawnPoints[Random.Range(0, zombieSpawnPoints.Count)];
+        }
+        else
+        {
+            Debug.LogWarning("No hay puntos de spawn definidos.");
+            return Vector3.zero;
+        }
+    }
 }
