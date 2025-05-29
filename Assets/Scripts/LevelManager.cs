@@ -165,7 +165,7 @@ public class LevelManager : NetworkBehaviour
                 if (enabled)
                 {
                     // Obtener la referencia a la cámara principal
-                    Camera mainCamera = Camera.main;
+                    /*Camera mainCamera = Camera.main;
 
                     if (mainCamera != null)
                     {
@@ -184,7 +184,7 @@ public class LevelManager : NetworkBehaviour
                     else
                     {
                         Debug.LogError("No se encontró la cámara principal.");
-                    }
+                    }*/
                 }
             }
             else

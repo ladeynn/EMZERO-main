@@ -1,13 +1,20 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+//jirijrijrirjirrjijr
+using Unity.Netcode;
+using Cinemachine;
 
 //AYUDA: unique.Id no sirve de nada porque el network te lo da hecho, lo primero que seria es eliminar el botom de host que solo da amarguras, crear nodo servidor, y que todo los clienetes se conecten
 // luego puedes poner el boton de host otra vez y ya funcionaria bien, ghestionar conexiones y reconexiones sin cerrar servidor, 
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour  //jirijrijrirjirrjijr
 {
     private TextMeshProUGUI coinText;
+
+    //jirijrijrirjirrjijr
+    [Header("Cinemachine")]
+    public GameObject virtualCameraObject; // referencia al GameObject que tiene la virtual camera
 
     [Header("Stats")]
     public int CoinsCollected = 0;
@@ -24,7 +31,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float _rotSpeed = 270f;           //velocidad rot
     public float zombieSpeedModifier = 0.8f; // Modificador de velocidad para zombies
     public Animator animator;              // Referencia al Animator
-    public Transform cameraTransform;      // Referencia a la cámara
 
     Transform _playerTransform;             //para sacar el transform del player
 
@@ -38,6 +44,16 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        //jirijrijrirjirrjijr
+
+        Debug.Log($"[{OwnerClientId}] IsOwner: {IsOwner} - Activando cámara: {virtualCameraObject?.name}");
+
+        if (IsOwner && virtualCameraObject != null)
+        {
+            virtualCameraObject.SetActive(true);
+        }
+
+
         // Buscar el objeto "CanvasPlayer" en la escena
         GameObject canvas = GameObject.Find("CanvasPlayer");
 
@@ -63,8 +79,17 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()  //cuando utilizamos fisicas, fixed update pq quiere que las interpolaciones se hagan en tiempos constantes y da menos errores
     {
+
+        if (!IsOwner) return;
+
         //zombie movimiento
-        float currentSpeed = isZombie ? moveSpeed * zombieSpeedModifier : moveSpeed;
+        float currentSpeed = moveSpeed;
+        if (isZombie)
+        {
+            currentSpeed = zombieSpeedModifier * moveSpeed;
+        }
+
+
         _playerTransform.Translate(Vector3.forward * (_input.y * currentSpeed * Time.fixedDeltaTime));     //movernos hacia adelante //ESTA ABAJO MODIFICAR
         _playerTransform.Rotate(Vector3.up * (_input.x * _rotSpeed * Time.fixedDeltaTime));                //rotamos sobre y
 

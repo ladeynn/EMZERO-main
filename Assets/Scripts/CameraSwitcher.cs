@@ -1,4 +1,4 @@
-using UnityEngine;
+/*using UnityEngine;
 
 public class CameraSwitcher : MonoBehaviour
 {
@@ -108,3 +108,4 @@ public class CameraSwitcher : MonoBehaviour
         }
     }
 }
+*/
