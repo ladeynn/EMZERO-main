@@ -10,11 +10,9 @@ using Cinemachine;
 //AYUDA: unique.Id no sirve de nada porque el network te lo da hecho, lo primero que seria es eliminar el botom de host que solo da amarguras, crear nodo servidor, y que todo los clienetes se conecten
 // luego puedes poner el boton de host otra vez y ya funcionaria bien, ghestionar conexiones y reconexiones sin cerrar servidor, 
 
-<<<<<<< HEAD
+
 public class PlayerController : NetworkBehaviour  //jirijrijrirjirrjijr
-=======
-public class PlayerController : NetworkBehaviour
->>>>>>> 8337d25a4075fd9f5a331428844916d879b0c046
+
 {
     private TextMeshProUGUI coinText;
 
@@ -98,12 +96,10 @@ public class PlayerController : NetworkBehaviour
 
     void FixedUpdate()  //cuando utilizamos fisicas, fixed update pq quiere que las interpolaciones se hagan en tiempos constantes y da menos errores
     {
-<<<<<<< HEAD
+
 
         if (!IsOwner) return;
-=======
-        if (!IsOwner) return; //mov
->>>>>>> 8337d25a4075fd9f5a331428844916d879b0c046
+
 
         //zombie movimiento
         float currentSpeed = moveSpeed;
