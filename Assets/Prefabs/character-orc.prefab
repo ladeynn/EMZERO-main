@@ -379,7 +379,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+<<<<<<< HEAD
   GlobalObjectIdHash: 1891393201
+=======
+  GlobalObjectIdHash: 3476103407
+>>>>>>> 8337d25a4075fd9f5a331428844916d879b0c046
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -400,6 +404,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 312a90f3167a5de4ba1d0027d4f7fd8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+<<<<<<< HEAD
   virtualCameraObject: {fileID: 2046016260390337462}
   CoinsCollected: 0
   isZombie: 0
@@ -409,6 +414,16 @@ MonoBehaviour:
   zombieSpeedModifier: 0.2
   animator: {fileID: 5266923850224609321}
   cameraTransform: {fileID: 0}
+=======
+  CoinsCollected: 0
+  isZombie: 0
+  uniqueID: 
+  moveSpeed: 1.5
+  _rotSpeed: 150
+  zombieSpeedModifier: 0.8
+  animator: {fileID: 5266923850224609321}
+  cameraTransform: {fileID: 1735021913840250813}
+>>>>>>> 8337d25a4075fd9f5a331428844916d879b0c046
 --- !u!114 &-5958015653143517070
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -393,6 +393,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 312a90f3167a5de4ba1d0027d4f7fd8a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+<<<<<<< HEAD
   virtualCameraObject: {fileID: 8205440141748701400}
   CoinsCollected: 0
   isZombie: 0
@@ -402,6 +403,16 @@ MonoBehaviour:
   zombieSpeedModifier: 0.8
   animator: {fileID: 370896438650836429}
   cameraTransform: {fileID: 0}
+=======
+  CoinsCollected: 0
+  isZombie: 0
+  uniqueID: 
+  moveSpeed: 5
+  _rotSpeed: 270
+  zombieSpeedModifier: 0.8
+  animator: {fileID: 370896438650836429}
+  cameraTransform: {fileID: 4753877830961410870}
+>>>>>>> 8337d25a4075fd9f5a331428844916d879b0c046
 --- !u!114 &-7684416050918300674
 MonoBehaviour:
   m_ObjectHideFlags: 0
