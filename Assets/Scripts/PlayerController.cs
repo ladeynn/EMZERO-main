@@ -3,7 +3,6 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-//jirijrijrirjirrjijr
 using Unity.Netcode;
 using Cinemachine;
 
@@ -11,12 +10,12 @@ using Cinemachine;
 // luego puedes poner el boton de host otra vez y ya funcionaria bien, ghestionar conexiones y reconexiones sin cerrar servidor, 
 
 
-public class PlayerController : NetworkBehaviour  //jirijrijrirjirrjijr
+public class PlayerController : NetworkBehaviour  
 
 {
     private TextMeshProUGUI coinText;
 
-    //jirijrijrirjirrjijr
+    
     [Header("Cinemachine")]
     public GameObject virtualCameraObject; // referencia al GameObject que tiene la virtual camera
 
@@ -48,7 +47,7 @@ public class PlayerController : NetworkBehaviour  //jirijrijrirjirrjijr
 
     void Start()
     {
-        //jirijrijrirjirrjijr
+        
 
         Debug.Log($"[{OwnerClientId}] IsOwner: {IsOwner} - Activando cámara: {virtualCameraObject?.name}");
 
