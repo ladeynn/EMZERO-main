@@ -1,11 +1,13 @@
+using System.Globalization;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 //AYUDA: unique.Id no sirve de nada porque el network te lo da hecho, lo primero que seria es eliminar el botom de host que solo da amarguras, crear nodo servidor, y que todo los clienetes se conecten
 // luego puedes poner el boton de host otra vez y ya funcionaria bien, ghestionar conexiones y reconexiones sin cerrar servidor, 
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     private TextMeshProUGUI coinText;
 
@@ -22,7 +24,7 @@ public class PlayerController : MonoBehaviour
     //el serializefield es para que se mantenga privado pero se oueda modificar desde el inspector, pero no se puede acceder desde otros scripts
     [SerializeField] float moveSpeed = 1f;           // Velocidad de movimiento
     [SerializeField] float _rotSpeed = 270f;           //velocidad rot
-    public float zombieSpeedModifier = 0.8f; // Modificador de velocidad para zombies
+    public float zombieSpeedModifier = 0.6f; // Modificador de velocidad para zombies
     public Animator animator;              // Referencia al Animator
     public Transform cameraTransform;      // Referencia a la cámara
 
@@ -61,8 +63,23 @@ public class PlayerController : MonoBehaviour
         UpdateCoinUI();
     }
 
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            var input = GetComponent<PlayerInput>();
+            if (input != null)
+            {
+                input.enabled = false;
+            }
+        }
+    }
+
+
     void FixedUpdate()  //cuando utilizamos fisicas, fixed update pq quiere que las interpolaciones se hagan en tiempos constantes y da menos errores
     {
+        if (!IsOwner) return; //mov
+
         //zombie movimiento
         float currentSpeed = isZombie ? moveSpeed * zombieSpeedModifier : moveSpeed;
         _playerTransform.Translate(Vector3.forward * (_input.y * currentSpeed * Time.fixedDeltaTime));     //movernos hacia adelante //ESTA ABAJO MODIFICAR

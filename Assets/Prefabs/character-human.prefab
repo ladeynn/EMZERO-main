@@ -172,10 +172,10 @@ PrefabInstance:
       addedObject: {fileID: -5065965205436163449}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 74c60d8a4cef15c429a607babeda9b66, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7788296597204385569}
+      addedObject: {fileID: 4294094698428186056}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 74c60d8a4cef15c429a607babeda9b66, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4294094698428186056}
+      addedObject: {fileID: 7788296597204385569}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 74c60d8a4cef15c429a607babeda9b66, type: 3}
       insertIndex: -1
       addedObject: {fileID: -7684416050918300674}
@@ -259,26 +259,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5, y: 0.6, z: 0.5}
   m_Center: {x: 0, y: 0.35, z: 0}
---- !u!114 &7788296597204385569
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8947290730586645348}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 312a90f3167a5de4ba1d0027d4f7fd8a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  CoinsCollected: 0
-  isZombie: 0
-  uniqueID: 
-  moveSpeed: 5
-  _rotSpeed: 270
-  zombieSpeedModifier: 0.8
-  animator: {fileID: 370896438650836429}
-  cameraTransform: {fileID: 4753877830961410870}
 --- !u!114 &4294094698428186056
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -300,6 +280,26 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!114 &7788296597204385569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8947290730586645348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312a90f3167a5de4ba1d0027d4f7fd8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CoinsCollected: 0
+  isZombie: 0
+  uniqueID: 
+  moveSpeed: 5
+  _rotSpeed: 270
+  zombieSpeedModifier: 0.8
+  animator: {fileID: 370896438650836429}
+  cameraTransform: {fileID: 4753877830961410870}
 --- !u!114 &-7684416050918300674
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -327,9 +327,9 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8947290730586645348}
+      - m_Target: {fileID: 7788296597204385569}
         m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
-        m_MethodName: 
+        m_MethodName: OnMove
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

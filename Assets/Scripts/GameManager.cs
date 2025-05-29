@@ -145,8 +145,10 @@ public class GameManager : NetworkBehaviour
         GameObject instancia = Instantiate(prefab, spawnPosition, Quaternion.identity);
 
         NetworkObject netObj = instancia.GetComponent<NetworkObject>();
-        netObj.Spawn(); // Spawn manual SIN usar SpawnAsPlayerObject
-        netObj.ChangeOwnership(clientId); // Le damos ownership al jugador
+        netObj.SpawnWithOwnership(clientId); //mov
+
+        /*netObj.Spawn(); // Spawn manual SIN usar SpawnAsPlayerObject
+        netObj.ChangeOwnership(clientId); // Le damos ownership al jugador*/
 
         PlayerController pc = instancia.GetComponent<PlayerController>();
         if (pc != null) pc.isZombie = !isHuman;
