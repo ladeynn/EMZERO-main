@@ -63,8 +63,10 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()  //cuando utilizamos fisicas, fixed update pq quiere que las interpolaciones se hagan en tiempos constantes y da menos errores
     {
-        _playerTransform.Translate(Vector3.forward * (_input.y * moveSpeed * Time.fixedDeltaTime));     //movernos hacia adelante //ESTA ABAJO MODIFICAR
-        _playerTransform.Rotate(Vector3.up * (_input.x * _rotSpeed * Time.fixedDeltaTime));             //rotamos sobre y
+        //zombie movimiento
+        float currentSpeed = isZombie ? moveSpeed * zombieSpeedModifier : moveSpeed;
+        _playerTransform.Translate(Vector3.forward * (_input.y * currentSpeed * Time.fixedDeltaTime));     //movernos hacia adelante //ESTA ABAJO MODIFICAR
+        _playerTransform.Rotate(Vector3.up * (_input.x * _rotSpeed * Time.fixedDeltaTime));                //rotamos sobre y
 
  
 
@@ -83,6 +85,10 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputAction.CallbackContext contex)
     {
         _input = contex.ReadValue<Vector2>();       //cuando input se ejecute fixed update esta esperando un imput para moverse
+
+        //zombie
+        horizontalInput = _input.x;
+        verticalInput = _input.y;
     }
 
     /*void PlayerMove()
